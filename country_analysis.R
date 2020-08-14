@@ -5,7 +5,7 @@ library(tidyverse)
 library(fs)
 
 
-working_dir        <- fs::path(here::here(), "project")
+working_dir        <- fs::path(here::here())
 processed_data_dir <- fs::path(working_dir, "data", "processed")
 
 # 1. Data ----
@@ -71,9 +71,20 @@ country_rank_tbl <- country_processed_tbl %>%
   mutate_at(
     select(., contains("idx"), score) %>% names(),
     function(x) round(x * 100, 0)
-  )
+  ) %>%
+  mutate(quartile = 5 - ntile(score, 4)) %>%
+  relocate(quartile, .after = score)
 
 country_rank_tbl %>% glimpse()
+
+country_rank_tbl %>%
+  group_by(quartile) %>%
+  summarize_at(.vars = c("personal_earnings_us_dollar",
+                         "long_term_unemployment_rate_percentage",
+                         "life_expectancy_years",
+                         "educational_attainment_percentage",
+                         "life_satisfaction_average_score"),
+               .funs = function(x) mean(x, na.rm = T))
 
 write_csv(country_rank_tbl, fs::path(processed_data_dir, "countries_rank.csv"))
 

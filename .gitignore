@@ -2,3 +2,4 @@
 *.twb
 .DS_Store
 .Rproj.user/
+.Rhistory
